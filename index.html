@@ -46,16 +46,14 @@ h1 {
     <script>
       
       document.addEventListener('DOMContentLoaded', function() {
-    // نحصل على معرف المستخدم من معلمات URL
-    var urlParams = new URLSearchParams(window.location.search);
-    var userID = urlParams.get('user_id'); // نفترض أن معرف المستخدم سيتم تمريره كمعلمة URL
-
-    if (userID) {
-        var inviteLink = 'https://t.me/YOUR_BOT_USERNAME?start=' + userID;
-        document.getElementById('inviteLink').textContent = inviteLink;
-    } else {
-        document.getElementById('inviteLink').textContent = 'لم يتم العثور على معرف المستخدم.';
+    // توليد رقم عشوائي مكون من 8 أرقام
+    function generateRandomNumber() {
+        return Math.floor(10000000 + Math.random() * 90000000).toString();
     }
+
+    var randomID = generateRandomNumber();
+    var inviteLink = 'https://t.me/YOUR_BOT_USERNAME?start=' + randomID;
+    document.getElementById('inviteLink').textContent = inviteLink;
 });
       
     </script>
