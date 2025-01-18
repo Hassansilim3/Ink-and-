@@ -4,7 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invite Link Generator</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #inviteLink {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+
+        #score {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #invitedUsers {
+            margin-top: 20px;
+        }
+
+        #userList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #userList li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #userList img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -16,119 +71,60 @@
             <ul id="userList"></ul>
         </div>
     </div>
-    <style>
-      
-      body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-
-.container {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-h1 {
-    margin-bottom: 20px;
-}
-
-#inviteLink {
-    margin-top: 20px;
-    padding: 10px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    word-break: break-all;
-}
-
-#score {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-#invitedUsers {
-    margin-top: 20px;
-}
-
-#userList {
-    list-style: none;
-    padding: 0;
-}
-
-#userList li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-#userList img {
-    border-radius: 50%;
-    margin-right: 10px;
-}
-      
-    </style>
     <script>
-      
-      document.addEventListener('DOMContentLoaded', function() {
-    // توليد رقم عشوائي مكون من 8 أرقام
-    function generateRandomNumber() {
-        return Math.floor(10000000 + Math.random() * 90000000).toString();
-    }
+        document.addEventListener('DOMContentLoaded', function() {
+            function generateRandomNumber() {
+                return Math.floor(10000000 + Math.random() * 90000000).toString();
+            }
 
-    var randomID = localStorage.getItem('inviteLinkID');
-    
-    if (!randomID) {
-        // إذا لم يكن هناك رقم محفوظ، قم بتوليد رقم جديد واحفظه
-        randomID = generateRandomNumber();
-        localStorage.setItem('inviteLinkID', randomID);
-    }
+            var randomID = localStorage.getItem('inviteLinkID');
+            
+            if (!randomID) {
+                randomID = generateRandomNumber();
+                localStorage.setItem('inviteLinkID', randomID);
+            }
 
-    var inviteLink = 'https://t.me/hassansilim267BOT?start=' + randomID;
-    document.getElementById('inviteLink').textContent = inviteLink;
+            var inviteLink = 'https://t.me/YOUR_BOT_USERNAME?start=' + randomID;
+            document.getElementById('inviteLink').textContent = inviteLink;
 
-    // حفظ واسترجاع النقاط والمستخدمين المدعوين
-    var score = localStorage.getItem('score') || 0;
-    document.getElementById('score').textContent = score;
+            var score = localStorage.getItem('score') || 0;
+            document.getElementById('score').textContent = score;
 
-    var invitedUsers = JSON.parse(localStorage.getItem('invitedUsers')) || [];
+            var invitedUsers = JSON.parse(localStorage.getItem('invitedUsers')) || [];
 
-    function renderInvitedUsers() {
-        var userList = document.getElementById('userList');
-        userList.innerHTML = '';
-        invitedUsers.forEach(function(user) {
-            var listItem = document.createElement('li');
-            var userImage = document.createElement('img');
-            userImage.src = user.photo_url; // URL صورة المستخدم
-            userImage.alt = user.username; // اسم المستخدم
-            userImage.width = 40; // عرض الصورة
-            userImage.height = 40; // ارتفاع الصورة
-            listItem.appendChild(userImage);
-            listItem.appendChild(document.createTextNode(user.username));
-            userList.appendChild(listItem);
+            function renderInvitedUsers() {
+                var userList = document.getElementById('userList');
+                userList.innerHTML = '';
+                invitedUsers.forEach(function(user) {
+                    var listItem = document.createElement('li');
+                    var userImage = document.createElement('img');
+                    userImage.src = user.photo_url;
+                    userImage.alt = user.username;
+                    userImage.width = 40;
+                    userImage.height = 40;
+                    listItem.appendChild(userImage);
+                    listItem.appendChild(document.createTextNode(user.username));
+                    userList.appendChild(listItem);
+                });
+            }
+
+            renderInvitedUsers();
+
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.username && event.data.photo_url) {
+                    inviteNewUser(event.data.username, event.data.photo_url);
+                }
+            });
+
+            function inviteNewUser(username, photo_url) {
+                invitedUsers.push({ username: username, photo_url: photo_url });
+                localStorage.setItem('invitedUsers', JSON.stringify(invitedUsers));
+                score++;
+                localStorage.setItem('score', score);
+                document.getElementById('score').textContent = score;
+                renderInvitedUsers();
+            }
         });
-    }
-
-    renderInvitedUsers();
-
-    // إزالة المحاكاة: فقط دعوة مستخدمين جدد عند فتح الرابط
-    function inviteNewUser(username, photo_url) {
-        invitedUsers.push({ username: username, photo_url: photo_url });
-        localStorage.setItem('invitedUsers', JSON.stringify(invitedUsers));
-        score++;
-        localStorage.setItem('score', score);
-        document.getElementById('score').textContent = score;
-        renderInvitedUsers();
-    }
-
-    // يمكنك الآن استخدام inviteNewUser عندما ترغب في إضافة مستخدم جديد
-});
     </script>
 </body>
 </html>
