@@ -117,7 +117,7 @@ h1 {
 
     renderInvitedUsers();
 
-    // محاكاة دعوة مستخدم جديد (يجب أن يكون هذا في الواقع منطق استقبال البوت للردود)
+    // إزالة المحاكاة: فقط دعوة مستخدمين جدد عند فتح الرابط
     function inviteNewUser(username, photo_url) {
         invitedUsers.push({ username: username, photo_url: photo_url });
         localStorage.setItem('invitedUsers', JSON.stringify(invitedUsers));
@@ -127,16 +127,8 @@ h1 {
         renderInvitedUsers();
     }
 
-    // محاكاة دعوة مستخدم جديد (للأغراض التوضيحية)
-    setTimeout(function() {
-        inviteNewUser('user1', 'https://via.placeholder.com/40');
-    }, 2000);
-
-    setTimeout(function() {
-        inviteNewUser('user2', 'https://via.placeholder.com/40');
-    }, 5000);
+    // يمكنك الآن استخدام inviteNewUser عندما ترغب في إضافة مستخدم جديد
 });
-      
     </script>
 </body>
 </html>
