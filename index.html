@@ -10,6 +10,11 @@
     <div class="container">
         <h1>مولد رابط الدعوة</h1>
         <div id="inviteLink">جاري توليد الرابط...</div>
+        <h2>النقاط الخاصة بك: <span id="score">0</span></h2>
+        <div id="invitedUsers">
+            <h3>المستخدمون المدعوون:</h3>
+            <ul id="userList"></ul>
+        </div>
     </div>
     <style>
       
@@ -41,22 +46,95 @@ h1 {
     background-color: #e9ecef;
     border-radius: 4px;
     word-break: break-all;
-        }
+}
+
+#score {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#invitedUsers {
+    margin-top: 20px;
+}
+
+#userList {
+    list-style: none;
+    padding: 0;
+}
+
+#userList li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#userList img {
+    border-radius: 50%;
+    margin-right: 10px;
+}
+      
     </style>
     <script>
       
       document.addEventListener('DOMContentLoaded', function() {
-    // تحقق من إذا كان هناك رقم عشوائي محفوظ في LocalStorage
+    // توليد رقم عشوائي مكون من 8 أرقام
+    function generateRandomNumber() {
+        return Math.floor(10000000 + Math.random() * 90000000).toString();
+    }
+
     var randomID = localStorage.getItem('inviteLinkID');
     
     if (!randomID) {
         // إذا لم يكن هناك رقم محفوظ، قم بتوليد رقم جديد واحفظه
-        randomID = Math.floor(10000000 + Math.random() * 90000000).toString();
+        randomID = generateRandomNumber();
         localStorage.setItem('inviteLinkID', randomID);
     }
 
     var inviteLink = 'https://t.me/hassansilim267BOT?start=' + randomID;
     document.getElementById('inviteLink').textContent = inviteLink;
+
+    // حفظ واسترجاع النقاط والمستخدمين المدعوين
+    var score = localStorage.getItem('score') || 0;
+    document.getElementById('score').textContent = score;
+
+    var invitedUsers = JSON.parse(localStorage.getItem('invitedUsers')) || [];
+
+    function renderInvitedUsers() {
+        var userList = document.getElementById('userList');
+        userList.innerHTML = '';
+        invitedUsers.forEach(function(user) {
+            var listItem = document.createElement('li');
+            var userImage = document.createElement('img');
+            userImage.src = user.photo_url; // URL صورة المستخدم
+            userImage.alt = user.username; // اسم المستخدم
+            userImage.width = 40; // عرض الصورة
+            userImage.height = 40; // ارتفاع الصورة
+            listItem.appendChild(userImage);
+            listItem.appendChild(document.createTextNode(user.username));
+            userList.appendChild(listItem);
+        });
+    }
+
+    renderInvitedUsers();
+
+    // محاكاة دعوة مستخدم جديد (يجب أن يكون هذا في الواقع منطق استقبال البوت للردود)
+    function inviteNewUser(username, photo_url) {
+        invitedUsers.push({ username: username, photo_url: photo_url });
+        localStorage.setItem('invitedUsers', JSON.stringify(invitedUsers));
+        score++;
+        localStorage.setItem('score', score);
+        document.getElementById('score').textContent = score;
+        renderInvitedUsers();
+    }
+
+    // محاكاة دعوة مستخدم جديد (للأغراض التوضيحية)
+    setTimeout(function() {
+        inviteNewUser('user1', 'https://via.placeholder.com/40');
+    }, 2000);
+
+    setTimeout(function() {
+        inviteNewUser('user2', 'https://via.placeholder.com/40');
+    }, 5000);
 });
       
     </script>
