@@ -84,7 +84,7 @@
                 localStorage.setItem('inviteLinkID', randomID);
             }
 
-            var inviteLink = 'https://t.me/hassansilim267BOT?start=' + randomID;
+            var inviteLink = 'https://t.me/YOUR_BOT_USERNAME?start=' + randomID;
             document.getElementById('inviteLink').textContent = inviteLink;
 
             var score = localStorage.getItem('score') || 0;
@@ -111,6 +111,7 @@
             renderInvitedUsers();
 
             window.addEventListener('message', function(event) {
+                console.log('Received message:', event.data); // تحقق من الرسالة المستلمة
                 if (event.data && event.data.username && event.data.photo_url) {
                     inviteNewUser(event.data.username, event.data.photo_url);
                 }
@@ -125,6 +126,15 @@
                 renderInvitedUsers();
             }
         });
+
+        // استخدام هذا الكود عند دعوة مستخدم جديد
+        var newUser = {
+            username: 'new_user_name',
+            photo_url: 'https://via.placeholder.com/40' 
+        };
+
+        console.log('Sending new user:', newUser); // تحقق من البيانات المرسلة
+        window.postMessage(newUser, '*');
     </script>
 </body>
-</html>
+    </html>
