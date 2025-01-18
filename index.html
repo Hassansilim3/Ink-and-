@@ -46,12 +46,15 @@ h1 {
     <script>
       
       document.addEventListener('DOMContentLoaded', function() {
-    // توليد رقم عشوائي مكون من 8 أرقام
-    function generateRandomNumber() {
-        return Math.floor(10000000 + Math.random() * 90000000).toString();
+    // تحقق من إذا كان هناك رقم عشوائي محفوظ في LocalStorage
+    var randomID = localStorage.getItem('inviteLinkID');
+    
+    if (!randomID) {
+        // إذا لم يكن هناك رقم محفوظ، قم بتوليد رقم جديد واحفظه
+        randomID = Math.floor(10000000 + Math.random() * 90000000).toString();
+        localStorage.setItem('inviteLinkID', randomID);
     }
 
-    var randomID = generateRandomNumber();
     var inviteLink = 'https://t.me/hassansilim267BOT?start=' + randomID;
     document.getElementById('inviteLink').textContent = inviteLink;
 });
