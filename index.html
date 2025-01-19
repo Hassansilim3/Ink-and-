@@ -83,7 +83,8 @@
 
             window.addEventListener('message', function(event) {
                 console.log('Received message:', event.data); // تحقق من الرسالة المستلمة
-                if (event.data && event.data.username && event.data.username !== randomID) {
+                if (event.data && event.data.username) {
+                    console.log('Inviting new user:', event.data.username);
                     inviteNewUser(event.data.username);
                 }
             });
@@ -92,6 +93,7 @@
                 score++;
                 localStorage.setItem('score', score);
                 document.getElementById('score').textContent = score;
+                console.log('New score:', score);
             }
 
             window.copyInviteLink = function() {
