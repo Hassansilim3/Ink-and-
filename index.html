@@ -40,21 +40,6 @@
             font-weight: bold;
         }
 
-        #invitedUsers {
-            margin-top: 20px;
-        }
-
-        #userList {
-            list-style: none;
-            padding: 0;
-        }
-
-        #userList li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
         .copy-button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -76,10 +61,6 @@
         <div id="inviteLink">جاري توليد الرابط...</div>
         <button class="copy-button" onclick="copyInviteLink()">نسخ الرابط</button>
         <h2>النقاط الخاصة بك: <span id="score">0</span></h2>
-        <div id="invitedUsers">
-            <h3>المستخدمون المدعوون:</h3>
-            <ul id="userList"></ul>
-        </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -100,20 +81,6 @@
             var score = localStorage.getItem('score') || 0;
             document.getElementById('score').textContent = score;
 
-            var invitedUsers = JSON.parse(localStorage.getItem('invitedUsers')) || [];
-
-            function renderInvitedUsers() {
-                var userList = document.getElementById('userList');
-                userList.innerHTML = '';
-                invitedUsers.forEach(function(user) {
-                    var listItem = document.createElement('li');
-                    listItem.textContent = user.username;
-                    userList.appendChild(listItem);
-                });
-            }
-
-            renderInvitedUsers();
-
             window.addEventListener('message', function(event) {
                 console.log('Received message:', event.data); // تحقق من الرسالة المستلمة
                 if (event.data && event.data.username) {
@@ -122,12 +89,9 @@
             });
 
             function inviteNewUser(username) {
-                invitedUsers.push({ username: username });
-                localStorage.setItem('invitedUsers', JSON.stringify(invitedUsers));
                 score++;
                 localStorage.setItem('score', score);
                 document.getElementById('score').textContent = score;
-                renderInvitedUsers();
             }
 
             window.copyInviteLink = function() {
