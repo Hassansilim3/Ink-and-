@@ -53,14 +53,6 @@
         .copy-button:hover {
             background-color: #0056b3;
         }
-
-        #userList {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            text-align: left;
-        }
     </style>
 </head>
 <body>
@@ -69,26 +61,8 @@
         <div id="inviteLink">جاري توليد الرابط...</div>
         <button class="copy-button" onclick="copyInviteLink()">نسخ الرابط</button>
         <h2>النقاط الخاصة بك: <span id="score">0</span></h2>
-        <div id="userList">المستخدمون المدعوون:</div>
     </div>
-   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-    const firebaseConfig = {
-            apiKey: "AIzaSyBekcFYAivjH934l0t0Z7bAILFcpghJ4Us",
-            authDomain: "trex-b4169.firebaseapp.com",
-            projectId: "trex-b4169",
-            storageBucket: "trex-b4169.firebasestorage.app",
-            messagingSenderId: "341755000409",
-            appId: "1:341755000409:web:2dd2922673392b47d4e348",
-            measurementId: "G-C5CMEE3W9E"
-        };
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-  
         document.addEventListener('DOMContentLoaded', function() {
             function generateRandomNumber() {
                 return Math.floor(10000000 + Math.random() * 90000000).toString();
@@ -101,7 +75,7 @@
                 localStorage.setItem('inviteLinkID', randomID);
             }
 
-            var inviteLink = 'https://t.me/Ohfgde_bot?start=' + randomID;
+            var inviteLink = 'https://t.me/hassansilim267BOT?start=' + randomID;
             document.getElementById('inviteLink').textContent = inviteLink;
 
             var score = localStorage.getItem('score') || 0;
@@ -119,13 +93,6 @@
                 score++;
                 localStorage.setItem('score', score);
                 document.getElementById('score').textContent = score;
-
-                // إضافة اسم المستخدم إلى القائمة
-                const userList = document.getElementById('userList');
-                const userItem = document.createElement('div');
-                userItem.textContent = username;
-                userList.appendChild(userItem);
-
                 console.log('New score:', score);
             }
 
@@ -140,4 +107,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
