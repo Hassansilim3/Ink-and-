@@ -53,6 +53,14 @@
         .copy-button:hover {
             background-color: #0056b3;
         }
+
+        #userList {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -61,50 +69,90 @@
         <div id="inviteLink">جاري توليد الرابط...</div>
         <button class="copy-button" onclick="copyInviteLink()">نسخ الرابط</button>
         <h2>النقاط الخاصة بك: <span id="score">0</span></h2>
+        <div id="userList">المستخدمون المدعوون:</div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function generateRandomNumber() {
-                return Math.floor(10000000 + Math.random() * 90000000).toString();
-            }
+    // إعداد Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBekcFYAivjH934l0t0Z7bAILFcpghJ4Us",
+        authDomain: "trex-b4169.firebaseapp.com",
+        projectId: "trex-b4169",
+        storageBucket: "trex-b4169.firebasestorage.app",
+        messagingSenderId: "341755000409",
+        appId: "1:341755000409:web:2dd2922673392b47d4e348",
+        measurementId: "G-C5CMEE3W9E"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-            var randomID = localStorage.getItem('inviteLinkID');
-            
-            if (!randomID) {
-                randomID = generateRandomNumber();
-                localStorage.setItem('inviteLinkID', randomID);
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        Telegram.WebApp.ready(() => {
+            if (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                const userId = Telegram.WebApp.initDataUnsafe.user.id;
+                const refLink = `https://t.me/X_Hasan_Cr194BOT?start=ref_${userId}`;
 
-            var inviteLink = 'https://t.me/hassansilim267BOT?start=' + randomID;
-            document.getElementById('inviteLink').textContent = inviteLink;
+                document.getElementById('inviteLink').textContent = refLink;
 
-            var score = localStorage.getItem('score') || 0;
-            document.getElementById('score').textContent = score;
-
-            window.addEventListener('message', function(event) {
-                console.log('Received message:', event.data); // تحقق من الرسالة المستلمة
-                if (event.data && event.data.username) {
-                    console.log('Inviting new user:', event.data.username);
-                    inviteNewUser(event.data.username);
-                }
-            });
-
-            function inviteNewUser(username) {
-                score++;
-                localStorage.setItem('score', score);
-                document.getElementById('score').textContent = score;
-                console.log('New score:', score);
-            }
-
-            window.copyInviteLink = function() {
-                var inviteLinkText = document.getElementById('inviteLink').textContent;
-                navigator.clipboard.writeText(inviteLinkText).then(function() {
-                    alert('تم نسخ الرابط بنجاح!');
-                }, function() {
-                    alert('حدث خطأ أثناء نسخ الرابط.');
+                // جلب النقاط من Firebase
+                db.collection("users").doc(userId).get().then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById('score').textContent = data.score || 0;
+                    }
+                }).catch((error) => {
+                    console.error("Error fetching score:", error);
                 });
+
+                window.addEventListener('message', function(event) {
+                    console.log('Received message:', event.data); // تحقق من الرسالة المستلمة
+                    if (event.data && event.data.username) {
+                        console.log('Inviting new user:', event.data.username);
+                        inviteNewUser(event.data.username);
+                    }
+                });
+
+                function inviteNewUser(username) {
+                    // زيادة النقاط في Firebase
+                    db.collection("users").doc(userId).update({
+                        score: firebase.firestore.FieldValue.increment(1)
+                    }).then(() => {
+                        // تحديث النقاط في الواجهة
+                        db.collection("users").doc(userId).get().then((doc) => {
+                            if (doc.exists) {
+                                const data = doc.data();
+                                document.getElementById('score').textContent = data.score || 0;
+
+                                // إضافة اسم المستخدم إلى القائمة
+                                const userList = document.getElementById('userList');
+                                const userItem = document.createElement('div');
+                                userItem.textContent = username;
+                                userList.appendChild(userItem);
+                            }
+                        }).catch((error) => {
+                            console.error("Error fetching score:", error);
+                        });
+                    }).catch((error) => {
+                        console.error("Error updating score:", error);
+                    });
+                }
+
+                window.copyInviteLink = function() {
+                    var inviteLinkText = document.getElementById('inviteLink').textContent;
+                    navigator.clipboard.writeText(inviteLinkText).then(function() {
+                        alert('تم نسخ الرابط بنجاح!');
+                    }, function() {
+                        alert('حدث خطأ أثناء نسخ الرابط.');
+                    });
+                }
+            } else {
+                document.getElementById('inviteLink').textContent = 'تعذر الحصول على بيانات المستخدم.';
             }
         });
+    });
     </script>
 </body>
     </html>
