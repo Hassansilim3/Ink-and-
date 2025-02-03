@@ -1,113 +1,122 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invite Link Generator</title>
+    <title>رابط دعوة البوت</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            background-color: #f0f2f5;
         }
 
-        .container {
-            background: white;
+        .invitation-box {
+            background-color: white;
             padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .link-container {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
-        h1 {
-            margin-bottom: 20px;
+        #invitationLink {
+            color: #1877f2;
+            font-size: 16px;
         }
 
-        #inviteLink {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            word-break: break-all;
-        }
-
-        .copy-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
+        .copy-btn {
+            background-color: #1877f2;
             color: white;
             border: none;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .copy-button:hover {
-            background-color: #0056b3;
+        .copy-btn:hover {
+            background-color: #166fe5;
         }
 
-        #userList {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            text-align: left;
+        @media (max-width: 480px) {
+            .invitation-box {
+                flex-direction: column;
+                padding: 15px;
+            }
+            
+            .copy-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>مولد رابط الدعوة</h1>
-        <div id="inviteLink">جاري توليد الرابط...</div>
-        <button class="copy-button" onclick="copyInviteLink()">نسخ الرابط</button>
-        <div id="userList">المستخدمون المدعوون:</div>
+    <div class="invitation-box">
+        <div class="link-container">
+            <span id="invitationLink">جاري تحميل الرابط...</span>
+        </div>
+        <button class="copy-btn" onclick="copyLink()">نسخ الرابط</button>
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function generateRandomNumber() {
-                return Math.floor(10000000 + Math.random() * 90000000).toString();
-            }
+        // دالة لاستخراج الباراميترات من الرابط
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
 
-            var randomID = localStorage.getItem('inviteLinkID');
+        // إنشاء الرابط التلقائي
+        function generateInvitationLink() {
+            const botUsername = 'hassansilim140BOT'; // معرف البوت الثابت
+            const userId = getQueryParam('ref'); // الحصول على المعرف من الباراميتر
             
-            if (!randomID) {
-                randomID = generateRandomNumber();
-                localStorage.setItem('inviteLinkID', randomID);
+            if(userId) {
+                return `https://t.me/${botUsername}?start=${userId}`;
             }
+            return '⚠️ الرابط غير صحيح (مطلوب باراميتر ref)';
+        }
 
-            var inviteLink = 'https://t.me/Ohfgde_bot?start=' + randomID;
-            document.getElementById('inviteLink').textContent = inviteLink;
-
-            window.addEventListener('message', function(event) {
-                console.log('Received message:', event.data); // تحقق من الرسالة المستلمة
-                if (event.data && event.data.username) {
-                    console.log('Inviting new user:', event.data.username);
-                    inviteNewUser(event.data.username);
-                }
-            });
-
-            function inviteNewUser(username) {
-                // إضافة اسم المستخدم إلى القائمة
-                const userList = document.getElementById('userList');
-                const userItem = document.createElement('div');
-                userItem.textContent = username;
-                userList.appendChild(userItem);
-
-                console.log('Invited user:', username);
-            }
-
-            window.copyInviteLink = function() {
-                var inviteLinkText = document.getElementById('inviteLink').textContent;
-                navigator.clipboard.writeText(inviteLinkText).then(function() {
-                    alert('تم نسخ الرابط بنجاح!');
-                }, function() {
-                    alert('حدث خطأ أثناء نسخ الرابط.');
+        // نسخ الرابط
+        function copyLink() {
+            const link = document.getElementById('invitationLink').innerText;
+            
+            navigator.clipboard.writeText(link)
+                .then(() => {
+                    const btn = document.querySelector('.copy-btn');
+                    btn.textContent = 'تم النسخ!';
+                    setTimeout(() => {
+                        btn.textContent = 'نسخ الرابط';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('فشل في النسخ:', err);
+                    alert('حدث خطأ أثناء النسخ!');
                 });
-            }
-        });
+        }
+
+        // تشغيل عند تحميل الصفحة
+        window.onload = function() {
+            document.getElementById('invitationLink').textContent = generateInvitationLink();
+        }
     </script>
 </body>
-    </html>
+</html>
