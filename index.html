@@ -12,7 +12,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
         }
 
@@ -22,16 +21,17 @@
             text-align: center;
         }
 
-        .input-box {
+        .user-box {
             width: 100%;
             padding: 15px;
-            margin: 10px 0;
+            margin: 20px 0;
             border: 2px solid #0088cc;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px;
             background: white;
             text-align: center;
-            cursor: pointer;
+            font-weight: bold;
+            color: #333;
         }
 
         .copy-btn {
@@ -51,30 +51,31 @@
             background: #006699;
         }
 
-        .user-box {
+        .referral-box {
             background: white;
             padding: 15px;
             border-radius: 8px;
             margin-top: 20px;
             border: 2px dashed #0088cc;
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- المربع العلوي: رابط الإحالة -->
-        <input type="text" id="userLink" class="input-box" readonly onclick="copyLink()">
+        <!-- المربع العلوي: يوزر المستخدم الحالي -->
+        <div class="user-box" id="currentUserBox">
+            جاري تحميل البيانات...
+        </div>
         
         <!-- زر النسخ -->
-        <button class="copy-btn" onclick="copyLink()">
-            نسخ الرابط 📋
+        <button class="copy-btn" onclick="copyReferralLink()">
+            نسخ رابط الإحالة 📋
         </button>
         
-        <!-- المربع السفلي: يوزر المستخدم -->
-        <div class="user-box" id="userBox">
-            جاري تحميل البيانات...
+        <!-- مربع الرابط المرجعي -->
+        <div class="referral-box" id="referralBox">
+            الرابط المرجعي: ...
         </div>
     </div>
 
@@ -82,29 +83,31 @@
         // تهيئة الويب اب
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.MainButton.hide();
 
         // بيانات المستخدم
         const botUsername = "hassansilim140BOT";
-        const user = tg.initDataUnsafe.user;
+        const currentUser = tg.initDataUnsafe.user;
         
-        // إنشاء الرابط
-        const referralLink = `https://t.me/${botUsername}?startapp=ref${user?.id}`;
-        
-        // عرض البيانات
-        document.getElementById('userLink').value = referralLink;
-        
-        // عرض يوزر المستخدم
-        if (user?.username) {
-            document.getElementById('userBox').innerHTML = `
-                👤 يوزر المستخدم: <br>
-                <span style="color: #0088cc;">@${user.username}</span>
+        // عرض يوزر المستخدم الحالي
+        if (currentUser?.username) {
+            document.getElementById('currentUserBox').innerHTML = `
+                👤 المستخدم الحالي: <br>
+                <span style="color: #0088cc;">@${currentUser.username}</span>
             `;
         } else {
-            document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
+            document.getElementById('currentUserBox').innerText = "زائر غير مسجل";
         }
 
+        // إنشاء الرابط المرجعي
+        const referralLink = `https://t.me/${botUsername}?startapp=ref${currentUser?.id || ''}`;
+        document.getElementById('referralBox').innerHTML = `
+            <small>رابط الإحالة:</small><br>
+            <span style="word-break: break-all;">${referralLink}</span>
+        `;
+
         // دالة نسخ الرابط
-        function copyLink() {
+        function copyReferralLink() {
             navigator.clipboard.writeText(referralLink).then(() => {
                 tg.showAlert("تم نسخ الرابط بنجاح ✅");
             }).catch(() => {
@@ -112,9 +115,9 @@
             });
         }
 
-        // التوجيه التلقائي إذا كان الرابط يحتوي على startapp
+        // التوجيه التلقائي إذا كان الرابط مخصصًا للبوت
         if (window.location.search.includes('startapp')) {
-            window.location.href = referralLink;
+            window.location.href = `https://t.me/${botUsername}`;
         }
     </script>
 </body>
