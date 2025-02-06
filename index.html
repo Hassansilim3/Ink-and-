@@ -51,7 +51,7 @@
             background: #006699;
         }
 
-        .user-id-box {
+        .user-box {
             background: white;
             padding: 15px;
             border-radius: 8px;
@@ -64,7 +64,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- المربع العلوي: رابط المستخدم -->
+        <!-- المربع العلوي: رابط الإحالة -->
         <input type="text" id="userLink" class="input-box" readonly onclick="copyLink()">
         
         <!-- زر النسخ -->
@@ -72,9 +72,9 @@
             نسخ الرابط 📋
         </button>
         
-        <!-- المربع السفلي: معرف المستخدم -->
-        <div class="user-id-box" id="userIdBox">
-            معرف المستخدم: ...
+        <!-- المربع السفلي: يوزر المستخدم -->
+        <div class="user-box" id="userBox">
+            جاري تحميل البيانات...
         </div>
     </div>
 
@@ -84,29 +84,37 @@
         tg.expand();
 
         // بيانات المستخدم
-        const botUsername = "hassansilim140BOT"; // يوزر البوت
-        const user = tg.initDataUnsafe.user; // بيانات المستخدم
-        const userId = user?.id || "غير معروف"; // معرف المستخدم
-
+        const botUsername = "hassansilim140BOT";
+        const user = tg.initDataUnsafe.user;
+        
         // إنشاء الرابط
-        const userLink = `https://t.me/${botUsername}?startapp=ref${userId}`;
-
+        const referralLink = `https://t.me/${botUsername}?startapp=ref${user?.id}`;
+        
         // عرض البيانات
-        document.getElementById('userLink').value = userLink;
-        document.getElementById('userIdBox').innerText = `معرف المستخدم: ${userId}`;
+        document.getElementById('userLink').value = referralLink;
+        
+        // عرض يوزر المستخدم
+        if (user?.username) {
+            document.getElementById('userBox').innerHTML = `
+                👤 يوزر المستخدم: <br>
+                <span style="color: #0088cc;">@${user.username}</span>
+            `;
+        } else {
+            document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
+        }
 
         // دالة نسخ الرابط
         function copyLink() {
-            navigator.clipboard.writeText(userLink).then(() => {
-                tg.showAlert("تم نسخ الرابط بنجاح!");
+            navigator.clipboard.writeText(referralLink).then(() => {
+                tg.showAlert("تم نسخ الرابط بنجاح ✅");
             }).catch(() => {
-                tg.showAlert("حدث خطأ أثناء النسخ!");
+                tg.showAlert("حدث خطأ أثناء النسخ ❌");
             });
         }
 
-        // التوجيه التلقائي إذا تم فتح الرابط مباشرة
+        // التوجيه التلقائي إذا كان الرابط يحتوي على startapp
         if (window.location.search.includes('startapp')) {
-            window.location.href = userLink;
+            window.location.href = referralLink;
         }
     </script>
 </body>
