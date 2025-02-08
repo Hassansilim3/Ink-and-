@@ -105,7 +105,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // تهيئة الويب اب
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -115,7 +115,7 @@
         const user = tg.initDataUnsafe.user;
         
         // إنشاء الرابط
-        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.username || 'guest'}`;
+        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.id || 'guest'}`; // استخدام الـ ID بدلًا من اليوزر
         
         // عرض البيانات
         document.getElementById('userLink').value = referralLink;
@@ -130,22 +130,26 @@
             document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
         }
 
-        // تخزين بيانات الزيارات في localStorage
-        let visits = JSON.parse(localStorage.getItem('visits')) || [];
+        // تخزين البيانات بمفتاح فريد لكل مستخدم
+        const storageKey = `visits_${user?.id || 'guest'}`;
+        let visits = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-        // تسجيل دخول المستخدم الحالي (فقط إذا لم يتم تسجيله من قبل)
+        // تسجيل دخول المستخدم الحالي
         const visitData = {
             userId: user?.id || 'unknown',
             username: user?.username || 'guest',
             timestamp: new Date().toLocaleString()
         };
 
-        // التحقق من عدم تسجيل المستخدم مسبقًا
-        const isUserAlreadyLogged = visits.some(visit => visit.userId === visitData.userId);
+        // التحقق من عدم التسجيل المسبق
+        const isUserAlreadyLogged = visits.some(v => 
+            v.userId === visitData.userId && 
+            v.timestamp === visitData.timestamp
+        );
 
         if (!isUserAlreadyLogged) {
             visits.push(visitData);
-            localStorage.setItem('visits', JSON.stringify(visits));
+            localStorage.setItem(storageKey, JSON.stringify(visits));
         }
 
         // عرض بيانات الزيارات
@@ -161,6 +165,7 @@
 
         displayVisits();
 
+
         // دالة نسخ الرابط
         function copyLink() {
             navigator.clipboard.writeText(referralLink).then(() => {
@@ -174,6 +179,8 @@
         if (window.location.search.includes('startapp')) {
             window.location.href = referralLink;
         }
+   
+        // ... (بقية الأكواد)
     </script>
 </body>
 </html>
