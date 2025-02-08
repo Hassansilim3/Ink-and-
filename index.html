@@ -60,6 +60,27 @@
             font-size: 18px;
             font-weight: bold;
         }
+
+        .visits-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #0088cc;
+            font-size: 16px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .visit-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .visit-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -76,6 +97,12 @@
         <div class="user-box" id="userBox">
             جاري تحميل البيانات...
         </div>
+
+        <!-- مربع زيارات المستخدمين -->
+        <div class="visits-box" id="visitsBox">
+            <h3>المستخدمين الذين دخلوا:</h3>
+            <div id="visitsList"></div>
+        </div>
     </div>
 
     <script>
@@ -88,7 +115,7 @@
         const user = tg.initDataUnsafe.user;
         
         // إنشاء الرابط
-        const referralLink = `https://t.me/${botUsername}?startapp=ref${user?.id}`;
+        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.username || 'guest'}`;
         
         // عرض البيانات
         document.getElementById('userLink').value = referralLink;
@@ -102,6 +129,32 @@
         } else {
             document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
         }
+
+        // تخزين بيانات الزيارات في localStorage
+        let visits = JSON.parse(localStorage.getItem('visits')) || [];
+
+        // تسجيل دخول المستخدم الحالي
+        const visitData = {
+            userId: user?.id || 'unknown',
+            username: user?.username || 'guest',
+            timestamp: new Date().toLocaleString()
+        };
+
+        visits.push(visitData);
+        localStorage.setItem('visits', JSON.stringify(visits));
+
+        // عرض بيانات الزيارات
+        function displayVisits() {
+            const visitsList = document.getElementById('visitsList');
+            visitsList.innerHTML = visits.map(visit => `
+                <div class="visit-item">
+                    <strong>@${visit.username}</strong> <br>
+                    <small>${visit.timestamp}</small>
+                </div>
+            `).join('');
+        }
+
+        displayVisits();
 
         // دالة نسخ الرابط
         function copyLink() {
