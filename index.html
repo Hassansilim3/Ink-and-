@@ -133,15 +133,20 @@
         // تخزين بيانات الزيارات في localStorage
         let visits = JSON.parse(localStorage.getItem('visits')) || [];
 
-        // تسجيل دخول المستخدم الحالي
+        // تسجيل دخول المستخدم الحالي (فقط إذا لم يتم تسجيله من قبل)
         const visitData = {
             userId: user?.id || 'unknown',
             username: user?.username || 'guest',
             timestamp: new Date().toLocaleString()
         };
 
-        visits.push(visitData);
-        localStorage.setItem('visits', JSON.stringify(visits));
+        // التحقق من عدم تسجيل المستخدم مسبقًا
+        const isUserAlreadyLogged = visits.some(visit => visit.userId === visitData.userId);
+
+        if (!isUserAlreadyLogged) {
+            visits.push(visitData);
+            localStorage.setItem('visits', JSON.stringify(visits));
+        }
 
         // عرض بيانات الزيارات
         function displayVisits() {
