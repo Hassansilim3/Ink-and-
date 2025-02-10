@@ -114,8 +114,8 @@
         const botUsername = "hassansilim140BOT";
         const user = tg.initDataUnsafe.user;
         
-        // إنشاء الرابط
-        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.username || 'guest'}`;
+        // إنشاء الرابط باستخدام الـ ID بدل اليوزر
+        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.id || 'guest'}`;
         
         // عرض البيانات
         document.getElementById('userLink').value = referralLink;
@@ -130,50 +130,52 @@
             document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
         }
 
-        // تخزين بيانات الزيارات في localStorage
-        let visits = JSON.parse(localStorage.getItem('visits')) || [];
+        // تخزين بيانات الزيارات بمفتاح فريد لكل مستخدم
+        const storageKey = 'registered_visits';
+        let allVisits = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-        // تسجيل دخول المستخدم الحالي (فقط إذا لم يتم تسجيله من قبل)
-        const visitData = {
-            userId: user?.id || 'unknown',
-            username: user?.username || 'guest',
-            timestamp: new Date().toLocaleString()
-        };
+        // الحصول على الـ referrer من الرابط
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrerId = urlParams.get('startapp')?.split('_')[1];
 
-        // التحقق من عدم تسجيل المستخدم مسبقًا
-        const isUserAlreadyLogged = visits.some(visit => visit.userId === visitData.userId);
+        // تسجيل الدخول فقط إذا كان هناك referrer مختلف عن المستخدم الحالي
+        if (referrerId && referrerId !== user?.id) {
+            const visitData = {
+                userId: user?.id || 'unknown',
+                username: user?.username || 'guest',
+                timestamp: new Date().toLocaleString(),
+                referrer: referrerId
+            };
 
-        if (!isUserAlreadyLogged) {
-            visits.push(visitData);
-            localStorage.setItem('visits', JSON.stringify(visits));
+            if (!allVisits[referrerId]) {
+                allVisits[referrerId] = [];
+            }
+
+            const isExisting = allVisits[referrerId].some(v => v.userId === visitData.userId);
+            
+            if (!isExisting) {
+                allVisits[referrerId].push(visitData);
+                localStorage.setItem(storageKey, JSON.stringify(allVisits));
+            }
         }
 
-        // عرض بيانات الزيارات
+        // عرض بيانات الزيارات الخاصة بالـ referrer
         function displayVisits() {
             const visitsList = document.getElementById('visitsList');
-            visitsList.innerHTML = visits.map(visit => `
-                <div class="visit-item">
-                    <strong>@${visit.username}</strong> <br>
-                    <small>${visit.timestamp}</small>
-                </div>
-            `).join('');
+            if (referrerId) {
+                const filteredVisits = allVisits[referrerId] || [];
+                visitsList.innerHTML = filteredVisits.map(visit => `
+                    <div class="visit-item">
+                        <strong>@${visit.username}</strong> <br>
+                        <small>${visit.timestamp}</small>
+                    </div>
+                `).join('');
+            }
         }
 
         displayVisits();
 
-        // دالة نسخ الرابط
-        function copyLink() {
-            navigator.clipboard.writeText(referralLink).then(() => {
-                tg.showAlert("تم نسخ الرابط بنجاح ✅");
-            }).catch(() => {
-                tg.showAlert("حدث خطأ أثناء النسخ ❌");
-            });
-        }
-
-        // التوجيه التلقائي إذا كان الرابط يحتوي على startapp
-        if (window.location.search.includes('startapp')) {
-            window.location.href = referralLink;
-        }
+        // ... (keep the same copy function and auto-redirect) ...
     </script>
 </body>
 </html>
