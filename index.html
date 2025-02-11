@@ -96,13 +96,13 @@
         tg.expand();
 
         // بيانات المستخدم
-        const botUsername = "Lion_coin_bot_bot"; // تم تغيير يوزر البوت هنا
+        const botUsername = "Lion_coin_bot_bot"; // يوزر البوت
         const user = tg.initDataUnsafe.user;
         
-        // إنشاء الرابط
-        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.id || 'guest'}`;
+        // إنشاء الرابط باستخدام اليوزر بدلًا من المعرف
+        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.username || 'guest'}`;
         
-        // عرض البيانات
+        // عرض الرابط في المربع العلوي
         document.getElementById('userLink').value = referralLink;
 
         // تخزين البيانات
@@ -112,18 +112,17 @@
         // معالجة الإحالة
         const urlParams = new URLSearchParams(window.location.search);
         const refParam = urlParams.get('startapp');
-        const referrerId = refParam?.startsWith('ref_') ? refParam.split('_')[1] : null;
+        const referrerUsername = refParam?.startsWith('ref_') ? refParam.split('_')[1] : null;
 
-        if (referrerId && user?.id && referrerId !== user.id.toString()) {
-            if (!allInvites[referrerId]) {
-                allInvites[referrerId] = [];
+        if (referrerUsername && user?.username && referrerUsername !== user.username) {
+            if (!allInvites[referrerUsername]) {
+                allInvites[referrerUsername] = [];
             }
             
-            const existingInvite = allInvites[referrerId].find(inv => inv.userId === user.id);
+            const existingInvite = allInvites[referrerUsername].find(inv => inv.username === user.username);
             
             if (!existingInvite) {
-                allInvites[referrerId].push({
-                    userId: user.id,
+                allInvites[referrerUsername].push({
                     username: user.username || 'مجهول',
                     timestamp: new Date().toLocaleString()
                 });
@@ -134,8 +133,8 @@
 
         // عرض البيانات
         function displayInvites() {
-            const currentRefId = user?.id?.toString() || 'guest';
-            const invites = allInvites[currentRefId] || [];
+            const currentRefUsername = user?.username || 'guest';
+            const invites = allInvites[currentRefUsername] || [];
             
             document.getElementById('visitsList').innerHTML = invites
                 .map(inv => `
