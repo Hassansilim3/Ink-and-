@@ -51,6 +51,16 @@
             background: #006699;
         }
 
+        .user-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px dashed #0088cc;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
         .visits-box {
             background: white;
             padding: 15px;
@@ -71,21 +81,37 @@
         .visit-item:last-child {
             border-bottom: none;
         }
+
+        .score-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #4CAF50;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- المربع العلوي: رابط الإحالة -->
+        <div class="score-box" id="scoreBox">
+            النقاط: 0
+        </div>
+        
         <input type="text" id="userLink" class="input-box" readonly onclick="copyLink()">
         
-        <!-- زر النسخ -->
         <button class="copy-btn" onclick="copyLink()">
             نسخ الرابط 📋
         </button>
+        
+        <div class="user-box" id="userBox">
+            جاري تحميل البيانات...
+        </div>
 
-        <!-- مربع زيارات المستخدمين -->
         <div class="visits-box" id="visitsBox">
-            <h3>المستخدمين المدعوين:</h3>
+            <h3>المستخدمين الذين دخلوا:</h3>
             <div id="visitsList"></div>
         </div>
     </div>
@@ -96,79 +122,86 @@
         tg.expand();
 
         // بيانات المستخدم
-        const botUsername = "Lion_coin_bot_bot"; // يوزر البوت
+        const botUsername = "hassansilim140BOT";
         const user = tg.initDataUnsafe.user;
         
-        // إنشاء الرابط باستخدام اليوزر بدلًا من المعرف
+        // إنشاء الرابط
         const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.username || 'guest'}`;
         
-        // عرض الرابط في المربع العلوي
+        // عرض البيانات
         document.getElementById('userLink').value = referralLink;
+        
+        // عرض يوزر المستخدم
+        if (user?.username) {
+            document.getElementById('userBox').innerHTML = `
+                👤 يوزر المستخدم: <br>
+                <span style="color: #0088cc;">@${user.username}</span>
+            `;
+        } else {
+            document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
+        }
 
-        // تخزين البيانات
-        const storageKey = 'invites_data';
-        let allInvites = JSON.parse(localStorage.getItem(storageKey)) || {};
-
+        // نظام النقاط
+        let scores = JSON.parse(localStorage.getItem('scores')) || {};
+        
         // معالجة الإحالة
         const urlParams = new URLSearchParams(window.location.search);
         const refParam = urlParams.get('startapp');
-        const referrerUsername = refParam?.startsWith('ref_') ? refParam.split('_')[1] : null;
+        const referrerUsername = refParam?.replace('ref_', '');
 
+        // تحديث النقاط
         if (referrerUsername && user?.username && referrerUsername !== user.username) {
-            if (!allInvites[referrerUsername]) {
-                allInvites[referrerUsername] = [];
-            }
-            
-            const existingInvite = allInvites[referrerUsername].find(inv => inv.username === user.username);
-            
-            if (!existingInvite) {
-                allInvites[referrerUsername].push({
-                    username: user.username || 'مجهول',
-                    timestamp: new Date().toLocaleString()
-                });
-                
-                localStorage.setItem(storageKey, JSON.stringify(allInvites));
-            }
+            if (!scores[referrerUsername]) scores[referrerUsername] = 0;
+            scores[referrerUsername] += 50;
+            localStorage.setItem('scores', JSON.stringify(scores));
         }
 
-        // عرض البيانات
-        function displayInvites() {
-            const currentRefUsername = user?.username || 'guest';
-            const invites = allInvites[currentRefUsername] || [];
-            
-            document.getElementById('visitsList').innerHTML = invites
-                .map(inv => `
-                    <div class="visit-item">
-                        <strong>@${inv.username}</strong>
-                        <div>${inv.timestamp}</div>
-                    </div>
-                `)
-                .join('');
+        // عرض النقاط
+        if (user?.username) {
+            const userScore = scores[user.username] || 0;
+            document.getElementById('scoreBox').textContent = `النقاط: ${userScore}`;
         }
 
-        displayInvites();
+        // نظام الزيارات
+        let visits = JSON.parse(localStorage.getItem('visits')) || [];
+        const visitData = {
+            userId: user?.id || 'unknown',
+            username: user?.username || 'guest',
+            timestamp: new Date().toLocaleString()
+        };
 
-        // دالة النسخ المعدلة
+        if (!visits.some(v => v.userId === visitData.userId)) {
+            visits.push(visitData);
+            localStorage.setItem('visits', JSON.stringify(visits));
+        }
+
+        // عرض الزيارات
+        function displayVisits() {
+            const visitsList = document.getElementById('visitsList');
+            visitsList.innerHTML = visits.map(visit => `
+                <div class="visit-item">
+                    <strong>@${visit.username}</strong> <br>
+                    <small>${visit.timestamp}</small>
+                </div>
+            `).join('');
+        }
+        displayVisits();
+
+        // دالة النسخ
         function copyLink() {
             const tempInput = document.createElement('input');
             tempInput.value = referralLink;
             document.body.appendChild(tempInput);
             tempInput.select();
-            
-            try {
-                document.execCommand('copy');
-                tg.showAlert("✅ تم نسخ الرابط بنجاح!");
-            } catch (err) {
-                tg.showAlert("❌ فشل في النسخ!");
-            }
-            
+            document.execCommand('copy');
             document.body.removeChild(tempInput);
+            tg.showAlert("✅ تم نسخ الرابط بنجاح!");
         }
 
         // التوجيه التلقائي
-        if (refParam && !refParam.startsWith('ref_')) {
-            window.location.href = `https://t.me/${botUsername}`;
+        if (window.location.search.includes('startapp')) {
+            window.location.href = referralLink;
         }
     </script>
 </body>
-</html>
+    </html>
