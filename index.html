@@ -81,35 +81,24 @@
         .visit-item:last-child {
             border-bottom: none;
         }
-
-        .score-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px solid #4CAF50;
-            font-size: 18px;
-            font-weight: bold;
-            color: #2E7D32;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="score-box" id="scoreBox">
-            النقاط: 0
-        </div>
-        
+        <!-- المربع العلوي: رابط الإحالة -->
         <input type="text" id="userLink" class="input-box" readonly onclick="copyLink()">
         
+        <!-- زر النسخ -->
         <button class="copy-btn" onclick="copyLink()">
             نسخ الرابط 📋
         </button>
         
+        <!-- المربع السفلي: يوزر المستخدم -->
         <div class="user-box" id="userBox">
             جاري تحميل البيانات...
         </div>
 
+        <!-- مربع زيارات المستخدمين -->
         <div class="visits-box" id="visitsBox">
             <h3>المستخدمين الذين دخلوا:</h3>
             <div id="visitsList"></div>
@@ -122,7 +111,7 @@
         tg.expand();
 
         // بيانات المستخدم
-        const botUsername = "Ton763connect_bot";
+        const botUsername = "hassansilim140BOT";
         const user = tg.initDataUnsafe.user;
         
         // إنشاء الرابط
@@ -141,41 +130,25 @@
             document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
         }
 
-        // نظام النقاط
-        let scores = JSON.parse(localStorage.getItem('scores')) || {};
-        
-        // معالجة الإحالة
-        const urlParams = new URLSearchParams(window.location.search);
-        const refParam = urlParams.get('startapp');
-        const referrerUsername = refParam?.replace('ref_', '');
-
-        // تحديث النقاط
-        if (referrerUsername && user?.username && referrerUsername !== user.username) {
-            if (!scores[referrerUsername]) scores[referrerUsername] = 0;
-            scores[referrerUsername] += 50;
-            localStorage.setItem('scores', JSON.stringify(scores));
-        }
-
-        // عرض النقاط
-        if (user?.username) {
-            const userScore = scores[user.username] || 0;
-            document.getElementById('scoreBox').textContent = `النقاط: ${userScore}`;
-        }
-
-        // نظام الزيارات
+        // تخزين بيانات الزيارات في localStorage
         let visits = JSON.parse(localStorage.getItem('visits')) || [];
+
+        // تسجيل دخول المستخدم الحالي (فقط إذا لم يتم تسجيله من قبل)
         const visitData = {
             userId: user?.id || 'unknown',
             username: user?.username || 'guest',
             timestamp: new Date().toLocaleString()
         };
 
-        if (!visits.some(v => v.userId === visitData.userId)) {
+        // التحقق من عدم تسجيل المستخدم مسبقًا
+        const isUserAlreadyLogged = visits.some(visit => visit.userId === visitData.userId);
+
+        if (!isUserAlreadyLogged) {
             visits.push(visitData);
             localStorage.setItem('visits', JSON.stringify(visits));
         }
 
-        // عرض الزيارات
+        // عرض بيانات الزيارات
         function displayVisits() {
             const visitsList = document.getElementById('visitsList');
             visitsList.innerHTML = visits.map(visit => `
@@ -185,23 +158,22 @@
                 </div>
             `).join('');
         }
+
         displayVisits();
 
         // دالة النسخ
         function copyLink() {
-            const tempInput = document.createElement('input');
-            tempInput.value = referralLink;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            tg.showAlert("✅ تم نسخ الرابط بنجاح!");
+            navigator.clipboard.writeText(referralLink).then(() => {
+                tg.showAlert("تم نسخ الرابط بنجاح ✅");
+            }).catch(() => {
+                tg.showAlert("حدث خطأ أثناء النسخ ❌");
+            });
         }
 
-        // التوجيه التلقائي
+        // التوجيه التلقائي إذا كان الرابط يحتوي على startapp
         if (window.location.search.includes('startapp')) {
             window.location.href = referralLink;
         }
     </script>
 </body>
-    </html>
+</html>
