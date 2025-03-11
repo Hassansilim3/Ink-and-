@@ -1,217 +1,94 @@
+
 <!DOCTYPE html>
-<html dir="rtl">
-<head>
-    <title>Telegram Mini App</title>
-    <meta charset="utf-8">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f0f2f5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        .input-box {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #0088cc;
-            border-radius: 8px;
-            font-size: 16px;
-            background: white;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .copy-btn {
-            background: #0088cc;
-            color: white;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            width: 100%;
-            margin: 15px 0;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-
-        .copy-btn:hover {
-            background: #006699;
-        }
-
-        .user-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 2px dashed #0088cc;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .golden-box {
-            border: 2px solid #FFD700;
-            background: linear-gradient(45deg, #FFF9C4, #FFEB3B);
-            box-shadow: 0 0 15px #FFD700;
-        }
-
-        .visits-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 2px solid #0088cc;
-            font-size: 16px;
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .visit-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .visit-item:last-child {
-            border-bottom: none;
-        }
-
-        .visit-time {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-<body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telegram Mini App Referral</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <!-- المربع الذهبي لأول مستخدم -->
-        <div class="user-box golden-box" id="firstUserBox" style="display: none;">
-            🏆 أول مستخدم في النظام!
-        </div>
-
-        <!-- المربع العادي للمستخدم -->
-        <div class="user-box" id="userBox">
-            جاري تحميل البيانات...
-        </div>
-
-        <!-- المربع العلوي: رابط الإحالة -->
-        <input type="text" id="userLink" class="input-box" readonly onclick="copyLink()">
-        
-        <!-- زر النسخ -->
-        <button class="copy-btn" onclick="copyLink()">
-            نسخ الرابط 📋
-        </button>
-
-        <!-- مربع زيارات المستخدمين -->
-        <div class="visits-box" id="visitsBox">
-            <h3>المستخدمين الذين دخلوا:</h3>
-            <div id="visitsList"></div>
-        </div>
+      <h1>Your Referral Link</h1>
+      <p id="userInfo">Loading user info...</p>
+      <input type="text" id="referralLink" readonly />
     </div>
 
-    <script>
-        // تهيئة الويب اب
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        // بيانات المستخدم
-        const botUsername = "hassansilim140BOT";
-        const user = tg.initDataUnsafe.user;
-        
-        // إنشاء الرابط
-        const referralLink = `https://t.me/${botUsername}?startapp=ref_${user?.username || 'guest'}`;
-        
-        // عرض البيانات
-        document.getElementById('userLink').value = referralLink;
-        
-        // عرض يوزر المستخدم
-        if (user?.username) {
-            document.getElementById('userBox').innerHTML = `
-                👤 يوزر المستخدم: <br>
-                <span style="color: #0088cc;">@${user.username}</span>
-            `;
-        } else {
-            document.getElementById('userBox').innerText = "لا يوجد يوزر مسجل!";
-        }
-
-        // نظام أول مستخدم
-        let firstUser = JSON.parse(localStorage.getItem('firstUser'));
-
-        if (!firstUser && user?.id) {
-            localStorage.setItem('firstUser', JSON.stringify({
-                userId: user.id,
-                username: user.username || 'مجهول',
-                timestamp: new Date().toISOString()
-            }));
-            firstUser = user.id;
-        }
-
-        if (user?.id && firstUser?.userId === user.id) {
-            document.getElementById('firstUserBox').style.display = 'block';
-            document.getElementById('userBox').style.display = 'none';
-        } else {
-            document.getElementById('firstUserBox').style.display = 'none';
-            document.getElementById('userBox').style.display = 'block';
-        }
-
-        // نظام الزيارات
-        let visits = JSON.parse(localStorage.getItem('visits')) || [];
-        const visitData = {
-            userId: user?.id || 'unknown',
-            username: user?.username || 'guest',
-            timestamp: new Date().toLocaleString()
-        };
-
-        if (!visits.some(v => v.userId === visitData.userId)) {
-            visits.push(visitData);
-            localStorage.setItem('visits', JSON.stringify(visits));
-        }
-
-        // عرض بيانات الزيارات
-        function displayVisits() {
-            const sortedVisits = [...visits].sort((a, b) => 
-                new Date(b.timestamp) - new Date(a.timestamp)
-            );
-            
-            document.getElementById('visitsList').innerHTML = sortedVisits.map(visit => `
-                <div class="visit-item">
-                    <strong>@${visit.username}</strong>
-                    <div class="visit-time">
-                        <small>${visit.timestamp}</small>
-                    </div>
-                </div>
-            `).join('');
-        }
-        displayVisits();
-
-        // دالة النسخ
-        function copyLink() {
-            const tempInput = document.createElement('input');
-            tempInput.value = referralLink;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            tg.showAlert("✅ تم نسخ الرابط بنجاح!");
-        }
-
-        // التوجيه التلقائي إذا كان الرابط يحتوي على startapp
-        if (window.location.search.includes('startapp')) {
-            window.location.href = referralLink;
-        }
-    </script>
-</body>
+    <!-- Load Telegram's WebApp library -->
+    <script src="https://telegram.org/js/telegram-webapp.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 90%;
+  max-width: 500px;
+}
+
+input#referralLink {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+</style>
+<script>
+
+// Ensure that the DOM is loaded before running the script
+window.addEventListener("DOMContentLoaded", () => {
+  // Access Telegram WebApp data
+  const tg = window.Telegram.WebApp;
+  
+  // Telegram passes user data via initDataUnsafe — use it with care and verify on your server as needed
+  const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+  
+  // Replace with your Telegram bot's username (without the '@')
+  const botUsername = "YourBotUsername";
+  
+  if (user) {
+    // Display the user's first name, username (if available) and user id
+    const nameDisplay = user.first_name 
+                        + (user.username ? " (@" + user.username + ")" : "");
+    document.getElementById("userInfo").textContent =
+      "Hello, " + nameDisplay + "! Your Telegram user ID is: " + user.id;
+    
+    // Create a referral link.
+    // When another user clicks this link, your bot receives the start parameter with the value set here.
+    // You can use this parameter to track referrals.
+    const referralParam = user.id; // You can change this to another value if you wish.
+    const referralLink = "https://t.me/" + botUsername + "?start=" + referralParam;
+    
+    // Display the referral link in the input so it can be copied by the user.
+    const referralLinkInput = document.getElementById("referralLink");
+    referralLinkInput.value = referralLink;
+    
+    // Optional: Automatically select the link so the user can copy it easily
+    referralLinkInput.addEventListener("click", () => {
+      referralLinkInput.select();
+    });
+  } else {
+    document.getElementById("userInfo").textContent =
+      "User data not available. Make sure you're opening this mini app within Telegram.";
+  }
+});
+
+
+                                       </script>
